@@ -1,0 +1,13 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {assess,tryPledge,remaining,can,priority} from '../src/core.js';
+const b={hazard:'Flood',lat:31.55,lng:74.34,time:1e12};
+test('2 source types verify',()=>assert.equal(assess({...b,source:'volunteer',time:b.time+36e5*2},[{...b,source:'citizen',status:'Pending'}]).status,'Verified'));
+test('authorized verifies alone',()=>assert.equal(assess({...b,source:'authorized'},[]).status,'Verified'));
+test('duplicate within 500m/1h',()=>assert.equal(assess({...b,lat:31.552,source:'citizen'},[{...b,source:'citizen',status:'Pending'}]).status,'Duplicate'));
+test('far reports do not verify',()=>assert.equal(assess({...b,lat:32.5,source:'ngo'},[{...b,source:'citizen',status:'Pending'}]).status,'Pending'));
+const needs=[{id:'a',needed:100,priority:50},{id:'b',needed:100,priority:90}];
+test('over-pledge blocked',()=>assert.equal(tryPledge(needs[0],[],'X',101,needs).ok,false));
+test('duplicate warns with suggestion',()=>{const r=tryPledge(needs[0],[{needId:'a',ngo:'Y',amount:10,status:'Committed'}],'X',10,needs);assert.equal(r.suggestion,'b')});
+test('remaining',()=>assert.equal(remaining(needs[0],[{needId:'a',amount:30,status:'Committed'}]),70));
+test('delivered pledge is counted through delivered total only',()=>assert.equal(remaining({id:'a',needed:100,delivered:30},[{needId:'a',amount:30,status:'Delivered'}]),70));
+test('roles',()=>{assert.ok(!can('Citizen','pledge'));assert.ok(can('Admin','broadcast'))});
+test('priority 0..100',()=>assert.ok(priority({affected:5,vul:1,unmet:1,age:9},5)<=100));
