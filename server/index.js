@@ -1,9 +1,14 @@
-// ResQ Hub API: Express + JWT (access/refresh) + roles + SSE + rate limit. JSON-file store (swap for SQLite/PostgreSQL, see README).
+// ResQ Hub API: Express + JWT + role checks, using local JSON or Vercel PostgreSQL storage.
+import 'dotenv/config';
 import express from 'express';import jwt from 'jsonwebtoken';import crypto from 'node:crypto';import fs from 'node:fs';
+import {AsyncLocalStorage} from 'node:async_hooks';import pg from 'pg';
 import {assess,can,tryPledge} from '../src/core.js';
 import {AREA_NAMES} from '../src/geo.js';
-const SECRET=process.env.JWT_SECRET,PORT=process.env.PORT||4000,FILE=new URL('./data.json',import.meta.url);
+const SECRET=process.env.JWT_SECRET,PORT=process.env.PORT||4000,FILE=process.env.VERCEL?'/tmp/resq-hub-data.json':new URL('./data.json',import.meta.url);
 if(!SECRET||Buffer.byteLength(SECRET)<32)throw new Error('Set JWT_SECRET to a random value of at least 32 bytes before starting the API.');
+const usePostgres=Boolean(process.env.VERCEL),databaseUrl=process.env.POSTGRES_URL||process.env.DATABASE_URL;
+if(usePostgres&&!databaseUrl)throw new Error('Set POSTGRES_URL in Vercel project environment variables.');
+const pool=usePostgres?new pg.Pool({connectionString:databaseUrl,max:1}):null,requestContext=new AsyncLocalStorage();
 const hashPassword=password=>{const salt=crypto.randomBytes(16).toString('hex');return salt+':'+crypto.scryptSync(password,salt,32).toString('hex')};
 const verifyPassword=(password,stored)=>{const [salt,hash]=stored.includes(':')?stored.split(':'):['resq-salt',stored];const actual=crypto.scryptSync(password,salt,32);const expected=Buffer.from(hash,'hex');return actual.length===expected.length&&crypto.timingSafeEqual(actual,expected)};
 const seed=()=>({users:[],needs:[],reports:[],pledges:[],alerts:[],refresh:[],activity:[]});
@@ -12,9 +17,73 @@ db.activity ||= [];db.users ||= [];db.reports ||= [];db.needs ||= [];db.pledges 
 const removedDemoUsers=db.users.filter(u=>/@demo\.pk$/i.test(u.email));if(removedDemoUsers.length){db.users=db.users.filter(u=>!/@demo\.pk$/i.test(u.email));db.reports=db.reports.filter(r=>!r.sample);db.alerts=db.alerts.filter(a=>!a.sample);db.needs=[];db.pledges=db.pledges.filter(p=>!/sample/i.test(p.ngo||''));}
 const save=()=>fs.writeFileSync(FILE,JSON.stringify(db));
 if(removedDemoUsers.length||!fs.existsSync(FILE))save();
+let databaseReady;
+if(usePostgres){
+ const initialState=JSON.parse(JSON.stringify(db));
+ db=new Proxy({},{
+  get:(_,key)=>{const state=requestContext.getStore()?.state||initialState;if(key==='toJSON')return()=>state;return state[key]},
+  set:(_,key,value)=>{const state=requestContext.getStore()?.state||initialState;state[key]=value;return true},
+  ownKeys:()=>Reflect.ownKeys(requestContext.getStore()?.state||initialState),
+  getOwnPropertyDescriptor:(_,key)=>({enumerable:true,configurable:true,value:(requestContext.getStore()?.state||initialState)[key],writable:true})
+ });
+ databaseReady=(async()=>{
+  await pool.query('CREATE TABLE IF NOT EXISTS resq_hub_state (id SMALLINT PRIMARY KEY CHECK (id = 1), state JSONB NOT NULL)');
+  await pool.query('INSERT INTO resq_hub_state (id,state) VALUES (1,$1::jsonb) ON CONFLICT (id) DO NOTHING',[JSON.stringify(initialState)]);
+  const client=await pool.connect();
+  try{
+   await client.query('BEGIN');
+   const result=await client.query('SELECT state FROM resq_hub_state WHERE id=1 FOR UPDATE');
+   const state=result.rows[0].state;
+   if(process.env.ADMIN_EMAIL&&process.env.ADMIN_PASSWORD&&!state.users.some(u=>u.role==='Admin')){
+    const email=process.env.ADMIN_EMAIL.trim().toLowerCase(),password=process.env.ADMIN_PASSWORD,name=String(process.env.ADMIN_NAME||'ResQ Hub Administrator').trim();
+    if(!/^\S+@\S+\.\S+$/.test(email)||password.length<16||password.length>128)throw new Error('ADMIN_EMAIL must be valid and ADMIN_PASSWORD must be 16 to 128 characters.');
+    state.users.push({id:crypto.randomUUID(),email,name,role:'Admin',pw:hashPassword(password),approved:true});
+    await client.query('UPDATE resq_hub_state SET state=$1::jsonb WHERE id=1',[JSON.stringify(state)]);
+   }
+   await client.query('COMMIT');
+  }catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}
+ })();
+}
 const clean=s=>String(s||'').replace(/<[^>]*>/g,'').trim().slice(0,500);
 const app=express();app.use(express.json({limit:'10kb'}));
 app.use((q,s,n)=>{s.set({'Access-Control-Allow-Origin':process.env.ORIGIN||'http://localhost:5173','Access-Control-Allow-Headers':'Content-Type,Authorization','Access-Control-Allow-Methods':'GET,POST,OPTIONS'});q.method==='OPTIONS'?s.sendStatus(204):n()});
+if(usePostgres)app.use(async(q,s,n)=>{
+ if(q.path==='/api/events')return n();
+ let client,transaction=q.method!=='GET'&&q.method!=='HEAD';
+ try{
+  await databaseReady;
+  client=await pool.connect();
+  if(transaction)await client.query('BEGIN');
+  const result=await client.query(`SELECT state FROM resq_hub_state WHERE id=1${transaction?' FOR UPDATE':''}`);
+  const context={state:result.rows[0].state,dirty:false,responseStarted:false,released:false};
+  const release=()=>{if(!context.released){context.released=true;client.release()}};
+  s.once('close',()=>{if(!context.responseStarted){if(transaction)client.query('ROLLBACK').catch(error=>console.error('Database rollback failed:',error.message)).finally(release);else release()}});
+  const send=s.send.bind(s);
+  s.send=function(body){
+   if(context.responseStarted)return send(body);
+   context.responseStarted=true;
+   return (async()=>{
+    try{
+     if(transaction)await client.query('UPDATE resq_hub_state SET state=$1::jsonb WHERE id=1',[JSON.stringify(context.state)]);
+     if(transaction)await client.query('COMMIT');
+     release();
+     return send(body);
+    }catch(error){
+     if(transaction)await client.query('ROLLBACK').catch(rollbackError=>console.error('Database rollback failed:',rollbackError.message));
+     release();
+     console.error('Database request failed:',error.message);
+     s.statusCode=500;s.removeHeader('Content-Length');s.setHeader('Content-Type','application/json; charset=utf-8');
+     return send(JSON.stringify({error:'Could not save this request. Please try again.'}));
+    }
+   })();
+  };
+  requestContext.run(context,n);
+ }catch(error){
+  if(client)client.release();
+  console.error('Database connection failed:',error.message);
+  s.status(503).json({error:'Persistent database is unavailable.'});
+ }
+});
 const auth=act=>(q,s,n)=>{try{q.user=jwt.verify((q.headers.authorization||'').slice(7),SECRET)}catch{return s.status(401).json({error:'Login required'})}if(act&&!can(q.user.role,act))return s.status(403).json({error:'Forbidden for your role'});n()};
 const hits=new Map();const limit=(q,s,n)=>{const now=Date.now(),a=(hits.get(q.user.id)||[]).filter(t=>now-t<6e4);if(a.length>=5)return s.status(429).json({error:'Rate limit: 5 reports per minute'});a.push(now);hits.set(q.user.id,a);n()};
 const clients=new Set();
@@ -44,4 +113,6 @@ app.get('/api/events',(q,s)=>{s.set({'Content-Type':'text/event-stream','Cache-C
 app.post('/api/alerts',auth('broadcast'),(q,s)=>{const a={id:Date.now(),hazard:clean(q.body.hazard),sev:clean(q.body.sev),district:clean(q.body.district),en:clean(q.body.en)};if(!a.en||!['High','Medium','Low'].includes(a.sev)||!AREA_NAMES.includes(a.district)||a.hazard!=='Flood')return s.status(400).json({error:'Enter a valid flood update, severity and area.'});db.alerts.unshift(a);save();const item=addActivity({type:'alert',title:`${a.sev} flood update published`,description:a.en,area:a.district});s.status(201).json({...a,activityId:item.id})});
 app.get('/api/users',auth('moderate'),(q,s)=>s.json(db.users.map(pub)));
 app.post('/api/users/:id/approve',auth('moderate'),(q,s)=>{const u=db.users.find(x=>x.id==q.params.id);if(!u)return s.sendStatus(404);u.approved=true;save();s.json(pub(u))});
-app.listen(PORT,()=>console.log('ResQ Hub API on http://localhost:'+PORT));
+app.use((q,s)=>s.sendStatus(404));
+if(!usePostgres)app.listen(PORT,()=>console.log('ResQ Hub API on http://localhost:'+PORT));
+export default app;

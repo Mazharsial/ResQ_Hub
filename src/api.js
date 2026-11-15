@@ -118,17 +118,38 @@ export const api = {
     return authorizedRequest(`/api/pledges/${encodeURIComponent(id)}/advance`, { method: 'POST', body: '{}' });
   },
   subscribeActivity(onEvent, onStatus) {
-    const source = new EventSource(`${API_BASE}/api/events`);
-    source.onopen = () => onStatus('connected');
-    source.onerror = () => onStatus('reconnecting');
-    source.onmessage = event => {
+    let active = true;
+    let pending = false;
+    let initialized = false;
+    const seen = new Set();
+    const poll = async () => {
+      if (pending) return;
+      pending = true;
       try {
-        onEvent(JSON.parse(event.data));
+        const items = await request('/api/activity');
+        if (!active) return;
+        if (initialized) {
+          items.filter(item => !seen.has(item.id)).reverse().forEach(onEvent);
+        }
+        items.forEach(item => seen.add(item.id));
+        if (seen.size > 200) {
+          seen.clear();
+          items.forEach(item => seen.add(item.id));
+        }
+        initialized = true;
+        onStatus('connected');
       } catch {
-        onStatus('error');
+        if (active) onStatus('reconnecting');
+      } finally {
+        pending = false;
       }
     };
-    return () => source.close();
+    void poll();
+    const timer = setInterval(poll, 10000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
   },
 };
 
