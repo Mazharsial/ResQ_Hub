@@ -1,36 +1,55 @@
-import { ArrowRight, ChevronDown, Mail, MessageCircle, Pause, Play } from 'lucide-react';
+import { ArrowRight, ChevronDown, Mail, MessageCircle, Pause, Play, ShieldAlert, Waves } from 'lucide-react';
 import Logo from './Logo';
+import { AREA_NAMES } from '../geo';
 
 export function PublicHeader({ s, set }) {
   return (
     <div className="public-header-shell">
       <header className="public-header wrap">
-        <a className="public-brand" href="#/" aria-label="ResQ Hub home">
-          <Logo size={42} />
-          <span><b>ResQ Hub</b><small>Community flood readiness</small></span>
+        <a className="public-brand" href="#/" aria-label="ResQ Hub - Return to Home">
+          <Logo size={40} />
+          <span>
+            <b>ResQ Hub</b>
+            <small>Ravi River Flood Readiness &amp; Relief</small>
+          </span>
         </a>
-        <nav className="public-nav" aria-label="Main navigation">
+
+        <nav className="public-nav" aria-label="Primary navigation">
+          <a href="#/">Home</a>
           <a href="#/about">About</a>
           <a href="#/features">Features</a>
-          <a className="nav-section-link" href="#/section/challenges">Challenges</a>
-          <a className="nav-section-link" href="#/section/workflow">Workflow</a>
-          <a className="nav-section-link nav-data-link" href="#/section/data-hub">Live data</a>
-          <a className="nav-section-link" href="#/section/relief">Relief</a>
-          <details className="public-section-menu" onClick={event => { if (event.target.closest('a')) event.currentTarget.open = false; }}>
+          <a className="nav-section-link" href="#/section/operations">Live Operations</a>
+          <a className="nav-section-link" href="#/section/workflow">7-Stage Workflow</a>
+          <a className="nav-section-link" href="#/section/data-hub">Ravi Zones</a>
+          <a className="nav-section-link" href="#/section/relief">Relief Hub</a>
+
+          <details className="public-section-menu" onClick={(event) => { if (event.target.closest('a')) event.currentTarget.open = false; }}>
             <summary>Explore <ChevronDown size={14} /></summary>
             <div>
-              <a href="#/section/challenges">Challenges</a>
-              <a href="#/section/solutions">Solutions</a>
-              <a href="#/section/workflow">Workflow</a>
-              <a href="#/section/data-hub">Live data</a>
-              <a href="#/section/relief">Relief coordination</a>
-              <a href="#/section/accessibility">Accessibility</a>
+              <a href="#/">Home</a>
+              <a href="#/about">About Mission</a>
+              <a href="#/features">Platform Features</a>
+              <a href="#/section/operations">Live Operations Stream</a>
+              <a href="#/section/workflow">7-Stage Architecture</a>
+              <a href="#/section/data-hub">Lahore Riverine Map</a>
+              <a href="#/section/relief">Relief Coordination</a>
             </div>
           </details>
-          <button className="motion-toggle" type="button" onClick={() => set({ motion: !s.motion })} aria-pressed={s.motion} aria-label={s.motion ? 'Pause animations' : 'Play animations'}>
-            {s.motion ? <Pause size={15} /> : <Play size={15} />}<span>{s.motion ? 'Pause motion' : 'Play motion'}</span>
+
+          <button
+            className="motion-toggle"
+            type="button"
+            onClick={() => set({ motion: !s.motion })}
+            aria-pressed={s.motion}
+            aria-label={s.motion ? 'Pause 3D and UI animations' : 'Resume 3D and UI animations'}
+          >
+            {s.motion ? <Pause size={14} /> : <Play size={14} />}
+            <span>{s.motion ? 'Pause Motion' : 'Play Motion'}</span>
           </button>
-          <a className="btn ghost" href="#/auth">Sign in <ArrowRight size={16} /></a>
+
+          <a className="btn" href="#/auth">
+            Sign In <ArrowRight size={15} />
+          </a>
         </nav>
       </header>
     </div>
@@ -41,28 +60,97 @@ export function PublicFooter() {
   return (
     <footer className="public-footer">
       <div className="wrap public-footer-inner">
-        <div className="footer-brand">
+        {/* Column 1: Brand & Operational Focus */}
+        <div className="footer-col footer-brand-col">
           <a className="public-brand" href="#/">
-            <Logo size={38} />
-            <span><b>ResQ Hub</b><small>Community flood readiness</small></span>
+            <Logo size={36} />
+            <span>
+              <b>ResQ Hub</b>
+              <small>Humanitarian Flood Coordination</small>
+            </span>
           </a>
-          <p>Local information and coordination for Lahore’s flood-prone communities.</p>
+          <p className="footer-mission-text">
+            A centralized civic-tech platform engineering communication bridges between vulnerable riverine settlements and verified relief partners along Lahore’s Ravi River corridor.
+          </p>
+          <div className="footer-compliance-pill">
+            <ShieldAlert size={14} className="text-emerald-500" />
+            <span>Multi-Tier Verification &amp; Anti-Duplicate Engine</span>
+          </div>
         </div>
-        <div className="footer-contact">
-          <h2>Contact</h2>
-          <a className="contact-link" href="mailto:mazisial9296@gmail.com" aria-label="Email ResQ Hub at mazisial9296@gmail.com">
-            <Mail size={18} /><span>Email ResQ Hub<small>mazisial9296@gmail.com</small></span><ArrowRight size={15} />
-          </a>
-          <a className="contact-link" href="https://wa.me/923044335771" target="_blank" rel="noopener noreferrer" aria-label="Open WhatsApp chat with ResQ Hub at +92 304 433 5771">
-            <MessageCircle size={18} /><span>Chat on WhatsApp<small>+92 304 433 5771</small></span><ArrowRight size={15} />
-          </a>
+
+        {/* Column 2: Platform Architecture & Modules */}
+        <div className="footer-col">
+          <h3 className="footer-col-title">Architecture &amp; Tools</h3>
+          <ul className="footer-links-list">
+            <li><a href="#/">Home Overview</a></li>
+            <li><a href="#/about">About &amp; 7-Stage Relief Model</a></li>
+            <li><a href="#/features">Core Platform Features</a></li>
+            <li><a href="#/section/operations">Live Operations Stream</a></li>
+            <li><a href="#/section/workflow">Verification Pipeline</a></li>
+            <li><a href="#/auth">Responder Portal (Sign In)</a></li>
+          </ul>
         </div>
-        <div className="footer-note">
-          <b>Emergency support</b>
-          <p>ResQ Hub does not replace official emergency services. In Punjab, call Rescue 1122 for emergencies.</p>
+
+        {/* Column 3: Lahore Ravi River Coverage Belt */}
+        <div className="footer-col">
+          <h3 className="footer-col-title">Lahore Ravi Belt Coverage</h3>
+          <ul className="footer-areas-list">
+            {AREA_NAMES.map((name) => (
+              <li key={name}>
+                <span className="area-indicator" />
+                <span>{name}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Column 4: Direct Response Channels & Emergency Notice */}
+        <div className="footer-col footer-contact-col">
+          <h3 className="footer-col-title">Coordination Inquiries</h3>
+          <p className="footer-contact-desc">
+            For operational partnerships, NGO resource pledging, and field volunteer inquiries:
+          </p>
+          <div className="footer-contact-links">
+            <a
+              className="contact-card-link"
+              href="mailto:mazisial9296@gmail.com"
+              aria-label="Send email to ResQ Hub at mazisial9296@gmail.com"
+            >
+              <Mail size={18} className="text-blue-500" />
+              <div>
+                <b>Email Inquiries</b>
+                <small>mazisial9296@gmail.com</small>
+              </div>
+            </a>
+            <a
+              className="contact-card-link"
+              href="https://wa.me/923044335771"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Direct WhatsApp channel with ResQ Hub coordinator"
+            >
+              <MessageCircle size={18} className="text-emerald-500" />
+              <div>
+                <b>WhatsApp Desk</b>
+                <small>+92 304 433 5771</small>
+              </div>
+            </a>
+          </div>
+
+          <div className="footer-emergency-advisory">
+            <b>Emergency Advisory</b>
+            <p>
+              In life-threatening flood emergencies, dial <strong>Rescue 1122</strong> directly. ResQ Hub operates as an information and relief coordination bridge.
+            </p>
+          </div>
         </div>
       </div>
-      <div className="wrap footer-bottom">© {new Date().getFullYear()} ResQ Hub Pakistan</div>
+
+      {/* Clean Bottom Copyright Bar */}
+      <div className="footer-bottom-bar wrap">
+        <span>© {new Date().getFullYear()} ResQ Hub. All rights reserved. Built for community resilience along the Ravi River flood-prone corridor.</span>
+        <span>Secure Role-Based Access Control (RBAC) &amp; ISO-aligned Data Hygiene</span>
+      </div>
     </footer>
   );
 }
@@ -70,7 +158,10 @@ export function PublicFooter() {
 export default function PublicLayout({ children, s, set }) {
   return (
     <div className="public-site">
-      <div className="public-prototype-banner"><span>Community project</span> ResQ Hub supports flood-readiness coordination for Lahore’s Ravi-side communities. It is not an official emergency-warning service.</div>
+      <div className="public-prototype-banner">
+        <span>Prototype · Demo Data</span>
+        Example scenarios only—not official or live flood information. For emergencies, contact Rescue 1122 and follow local authorities.
+      </div>
       <PublicHeader s={s} set={set} />
       {children}
       <PublicFooter />

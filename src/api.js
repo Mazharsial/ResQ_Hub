@@ -154,6 +154,6 @@ export const api = {
 };
 
 export const DISTRICTS = AREAS;
-export { AREA_NAMES };
+export { AREAS, AREA_NAMES };
 export const nearest = (lat, lng) => DISTRICTS.map(area => [area[0], (area[1] - lat) ** 2 + (area[2] - lng) ** 2]).sort((a, b) => a[1] - b[1])[0][0];
 export const submitReport = (user, report) => api.submitReport(user, report);
