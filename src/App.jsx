@@ -1,105 +1,18 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
-import AppRoutes from './Routes';
-import Shell from './components/Shell';
-import { api } from './api';
-
-const Landing = lazy(() => import('./pages/Landing'));
-const About = lazy(() => import('./pages/About'));
-const Features = lazy(() => import('./pages/Features'));
-const Auth = lazy(() => import('./pages/Auth'));
-
-export default function App() {
-  const [route, setRoute] = useState(location.hash.slice(1) || '/');
-  const [settings, setSettings] = useState(() => {
-    const savedMotion = localStorage.getItem('resq-motion');
-    return {
-      theme: 'light',
-      lang: 'en',
-      low: false,
-      motion: savedMotion === null ? !matchMedia('(prefers-reduced-motion: reduce)').matches : savedMotion === 'true',
-    };
-  });
-  const [user, setUser] = useState(null);
-  const [sessionReady, setSessionReady] = useState(false);
-  const [authNotice, setAuthNotice] = useState('');
-  const [offline, setOffline] = useState(!navigator.onLine);
-  const set = patch => setSettings(current => {
-    const next = { ...current, ...patch };
-    if (Object.hasOwn(patch, 'motion')) localStorage.setItem('resq-motion', String(next.motion));
-    return next;
-  });
-
-  useEffect(() => {
-    const updateRoute = () => setRoute(location.hash.slice(1) || '/');
-    const online = () => setOffline(false);
-    const offline = () => setOffline(true);
-    addEventListener('hashchange', updateRoute);
-    addEventListener('online', online);
-    addEventListener('offline', offline);
-    api.getSession()
-      .then(setUser)
-      .catch(() => {
-        setAuthNotice('Your session could not be restored. Please sign in again.');
-        if (location.hash.startsWith('#/app/')) location.hash = '/auth';
-      })
-      .finally(() => setSessionReady(true));
-    return () => {
-      removeEventListener('hashchange', updateRoute);
-      removeEventListener('online', online);
-      removeEventListener('offline', offline);
-    };
-  }, []);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.dataset.theme = settings.theme;
-    root.lang = settings.lang;
-    root.dir = settings.lang === 'ur' ? 'rtl' : 'ltr';
-    root.dataset.motion = settings.motion ? 'on' : 'reduce';
-    root.dataset.lowbw = settings.low ? 'on' : 'off';
-  }, [settings]);
-
-  const login = nextUser => {
-    setUser(nextUser);
-    setAuthNotice('');
-    location.hash = '/app/dashboard';
-  };
-  const logout = async () => {
-    try {
-      await api.logout();
-      setAuthNotice('');
-      location.hash = '/';
-    } catch {
-      setAuthNotice('This device signed out, but the service could not confirm token revocation. Please try again when online.');
-      location.hash = '/auth';
-    } finally {
-      setUser(null);
-    }
-  };
-
-  let page;
-  const sub = route.replace('/app/', '');
-  const landingSection = route.match(/^\/section\/([a-z-]+)$/)?.[1];
-  if (route === '/') page = <Landing s={settings} set={set} />;
-  else if (landingSection) page = <Landing s={settings} set={set} section={landingSection} />;
-  else if (route === '/about') page = <About s={settings} set={set} />;
-  else if (route === '/features') page = <Features s={settings} set={set} />;
-  else if (route === '/auth') page = <Auth onUser={login} notice={authNotice} />;
-  else if (route.startsWith('/app/')) {
-    if (!sessionReady) return <p className="loading-page" aria-busy="true">Checking your session…</p>;
-    if (!user) {
-      if (location.hash !== '#/auth') location.hash = '/auth';
-      return null;
-    }
-    page = <Shell user={user} route={route} s={settings} set={set} logout={logout}>
-      <AppRoutes sub={sub} user={user} s={settings} set={set} />
-    </Shell>;
-  } else page = <NotFound />;
-
-  return <>{offline && <div className="off" role="status">You are offline. Live updates are unavailable.</div>}
-    <Suspense fallback={<p className="loading-page" aria-busy="true">Loading ResQ Hub…</p>}>{page}</Suspense></>;
-}
-
-function NotFound() {
-  return <main className="wrap not-found"><h1>Page not found</h1><p>This page may have moved or is not available.</p><a className="btn" href="#/">Return home</a></main>;
-}
+import {lazy,Suspense,useEffect,useState} from 'react';import AppRoutes from './Routes';import Shell from './components/Shell';
+const Public=lazy(()=>import('./pages/Public')),Landing=lazy(()=>import('./pages/Landing')),Auth=lazy(()=>import('./pages/Auth')),Dashboard=lazy(()=>import('./pages/Dashboard'));
+const T={en:{tag:'Connect. Support. Recover.',login:'Login',report:'Report Emergency',learn:'Learn More'},ur:{tag:'جڑیں۔ مدد کریں۔ بحال ہوں۔',login:'لاگ اِن',report:'ہنگامی رپورٹ',learn:'مزید جانیں'}};
+const STAGE={report:2,alerts:2,needs:3,relief:3,community:3,profile:3};
+export default function App(){const [route,setRoute]=useState((location.hash.slice(1).split('?')[0]||'/'));const [s,setS]=useState({theme:'light',lang:'en',low:false,motion:!matchMedia('(prefers-reduced-motion: reduce)').matches});const [user,setUser]=useState(()=>{try{return JSON.parse(sessionStorage.getItem('u'))}catch{return null}});const [off,setOff]=useState(!navigator.onLine);
+ const set=p=>setS(o=>({...o,...p}));
+ useEffect(()=>{const f=()=>setRoute((location.hash.slice(1).split('?')[0]||'/'));const on=()=>setOff(false),of=()=>setOff(true);addEventListener('hashchange',f);addEventListener('online',on);addEventListener('offline',of);return()=>{removeEventListener('hashchange',f);removeEventListener('online',on);removeEventListener('offline',of)}},[]);
+ useEffect(()=>{const d=document.documentElement;d.dataset.theme=s.theme;d.lang=s.lang;d.dir=s.lang==='ur'?'rtl':'ltr';d.dataset.motion=s.motion?'on':'reduce';d.dataset.lowbw=s.low?'on':'off'},[s]);
+ document.documentElement.lang=s.lang;
+ const login=u=>{try{sessionStorage.setItem('u',JSON.stringify(u))}catch{}setUser(u);location.hash='/app/dashboard'};const logout=()=>{try{sessionStorage.removeItem('u')}catch{}setUser(null);location.hash='/'};
+ let page;const sub=route.replace('/app/','');
+ if(route==='/')page=<Landing t={T[s.lang]}/>;else if(['/about','/features','/contact'].includes(route))page=<Public page={route.slice(1)}/>;else if(route==='/auth')page=<Auth onUser={login}/>;
+ else if(route.startsWith('/app/')){if(!user){location.hash='/auth';return null}
+  page=<Shell user={user} route={route} s={s} set={set} logout={logout}><AppRoutes sub={sub} user={user} s={s} set={set}/></Shell>}
+ else page=<NotFound/>;
+ return(<>{off&&<div className="off" role="status">You are offline. Showing the last loaded data.</div>}
+ <Suspense fallback={<p style={{padding:24}} aria-busy="true">Loading…</p>}>{page}</Suspense><div className="badge">Pilot dataset</div></>)}
+function NotFound(){return<main className="wrap" style={{textAlign:'center',padding:60}}><h1>404</h1><p>We could not find that page, but help is still close.</p><a className="btn" href="#/">Back home</a></main>}

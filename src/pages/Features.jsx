@@ -180,7 +180,7 @@ export default function Features({ s, set }) {
               <div className="module-simulator-box">
                 <div className="simulator-header">
                   <span className="simulator-badge">
-                    <Activity size={13} className="text-emerald-400" /> Interactive Module Demo
+                    <Activity size={13} className="text-emerald-400" /> Interactive Module Simulator
                   </span>
                   <span className="text-xs text-gray-400">Live Architecture Simulator</span>
                 </div>
@@ -433,7 +433,7 @@ export default function Features({ s, set }) {
                       window.scrollTo({ top: 380, behavior: 'smooth' });
                     }}
                   >
-                    Open Simulator Demo <ChevronRight size={14} />
+                    Open Interactive Simulator <ChevronRight size={14} />
                   </button>
                 </TiltCard>
               );

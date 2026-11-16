@@ -8,6 +8,5 @@ const needs=[{id:'a',needed:100,priority:50},{id:'b',needed:100,priority:90}];
 test('over-pledge blocked',()=>assert.equal(tryPledge(needs[0],[],'X',101,needs).ok,false));
 test('duplicate warns with suggestion',()=>{const r=tryPledge(needs[0],[{needId:'a',ngo:'Y',amount:10,status:'Committed'}],'X',10,needs);assert.equal(r.suggestion,'b')});
 test('remaining',()=>assert.equal(remaining(needs[0],[{needId:'a',amount:30,status:'Committed'}]),70));
-test('delivered pledge is counted through delivered total only',()=>assert.equal(remaining({id:'a',needed:100,delivered:30},[{needId:'a',amount:30,status:'Delivered'}]),70));
 test('roles',()=>{assert.ok(!can('Citizen','pledge'));assert.ok(can('Admin','broadcast'))});
 test('priority 0..100',()=>assert.ok(priority({affected:5,vul:1,unmet:1,age:9},5)<=100));

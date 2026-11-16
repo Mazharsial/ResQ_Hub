@@ -8,7 +8,7 @@ export function assess(r,existing){const same=existing.filter(e=>live(e)&&e.haza
  return{status:auth||types.size>=2?'Verified':near.length?'Cross-checking':'Pending',confidence}}
 export const PRIORITY_FORMULA='Priority = 40% verified affected (vs max) + 25% vulnerable share + 25% unmet-need ratio + 10% age of oldest unmet need (7 days = max)';
 export const priority=(a,maxAffected)=>Math.round(100*(.4*Math.min(1,a.affected/maxAffected)+.25*a.vul+.25*a.unmet+.1*Math.min(1,a.age/7)));
-export const remaining=(need,pledges)=>(need.needed-(need.delivered||0))-pledges.filter(p=>p.needId===need.id&&!['Cancelled','Delivered'].includes(p.status)).reduce((s,p)=>s+p.amount,0);
+export const remaining=(need,pledges)=>need.needed-pledges.filter(p=>p.needId===need.id&&p.status!=='Cancelled').reduce((s,p)=>s+p.amount,0);
 export function tryPledge(need,pledges,ngo,amount,needs){const rem=remaining(need,pledges);
  if(!(amount>0))return{ok:false,error:'Enter a positive amount.'};if(amount>rem)return{ok:false,error:`Over-pledge blocked: only ${rem} remaining.`};
  const dup=pledges.some(p=>p.needId===need.id&&p.ngo!==ngo&&p.status!=='Cancelled');

@@ -1,4 +1,4 @@
-import {LayoutDashboard,FilePlus,Bell,BarChart3,Share2,Users,User,LogOut,Moon,Map as MapIc,ShieldCheck} from 'lucide-react';import {tr} from '../i18n';import Logo from './Logo';import {PublicFooter} from './PublicLayout';
+import {LayoutDashboard,FilePlus,Bell,BarChart3,Share2,Users,User,LogOut,Moon,Map as MapIc,ShieldCheck} from 'lucide-react';import {tr} from '../i18n';import Logo from './Logo';
 const NAV=[['dashboard',LayoutDashboard,'Dashboard'],['report',FilePlus,'Report Disaster'],['alerts',Bell,'Alerts'],['needs',BarChart3,'Needs'],['relief',Share2,'Relief Coordination'],['community',Users,'Community'],['hub',ShieldCheck,'Verified Hub'],['map',MapIc,'Disaster Map'],['profile',User,'Profile']];
 export default function Shell({user,route,s,set,logout,children}){const themes=['light','dark','contrast'];
  return(<div className="shell"><nav className="side" aria-label="Primary"><a href="#/app/dashboard" className="logo"><Logo size={32}/><b>ResQHub</b></a>
@@ -9,5 +9,5 @@ export default function Shell({user,route,s,set,logout,children}){const themes=[
  <button className="ic" onClick={()=>set({lang:s.lang==='en'?'ur':'en'})} aria-label="Switch language">{s.lang==='en'?'اردو':'EN'}</button>
  <button className="ic" onClick={()=>set({theme:themes[(themes.indexOf(s.theme)+1)%3]})} aria-label={'Theme: '+s.theme}><Moon size={18}/></button>
  <button className="ic" onClick={()=>set({motion:!s.motion})} aria-pressed={!s.motion} aria-label="Reduce motion">{s.motion?'Motion':'Calm'}</button>
- <button className="ic" aria-label="Notifications"><Bell size={18}/></button><div className="ic" style={{display:'grid',placeItems:'center'}} aria-label={user.name}>{user.name[0].toUpperCase()}</div></div>
- <main>{children}</main><PublicFooter/></div></div>)}
+ <button className="ic" aria-label="3 notifications"><Bell size={18}/><span className="cnt">3</span></button><div className="ic" style={{display:'grid',placeItems:'center'}} aria-label={user.name}>{user.name[0].toUpperCase()}</div></div>
+ <main>{children}</main></div></div>)}

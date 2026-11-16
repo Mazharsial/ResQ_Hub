@@ -1,55 +1,36 @@
-import { ArrowRight, ChevronDown, Mail, MessageCircle, Pause, Play, ShieldAlert, Waves } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Heart, Mail, MessageCircle, Phone, Shield, Truck } from 'lucide-react';
 import Logo from './Logo';
 import { AREA_NAMES } from '../geo';
 
-export function PublicHeader({ s, set }) {
+export function PublicHeader() {
   return (
     <div className="public-header-shell">
       <header className="public-header wrap">
         <a className="public-brand" href="#/" aria-label="ResQ Hub - Return to Home">
-          <Logo size={40} />
+          <Logo size={42} />
           <span>
-            <b>ResQ Hub</b>
-            <small>Ravi River Flood Readiness &amp; Relief</small>
+            <b>ResQHub Pakistan</b>
+            <small>Disaster Management &amp; Relief Coordination</small>
           </span>
         </a>
 
         <nav className="public-nav" aria-label="Primary navigation">
-          <a href="#/">Home</a>
-          <a href="#/about">About</a>
-          <a href="#/features">Features</a>
-          <a className="nav-section-link" href="#/section/operations">Live Operations</a>
-          <a className="nav-section-link" href="#/section/workflow">7-Stage Workflow</a>
-          <a className="nav-section-link" href="#/section/data-hub">Ravi Zones</a>
-          <a className="nav-section-link" href="#/section/relief">Relief Hub</a>
+          <a href="#/" className="nav-item">Home</a>
+          <a href="#/about" className="nav-item">About</a>
+          <a href="#/features" className="nav-item">Features</a>
+          <a href="#/alerts" className="nav-item">Alerts</a>
+          <a href="#/needs" className="nav-item">Needs</a>
+          <a href="#/hub" className="nav-item">Verified Hub</a>
+          <a href="mailto:mazisial9296@gmail.com" className="nav-item">Contact</a>
 
-          <details className="public-section-menu" onClick={(event) => { if (event.target.closest('a')) event.currentTarget.open = false; }}>
-            <summary>Explore <ChevronDown size={14} /></summary>
-            <div>
-              <a href="#/">Home</a>
-              <a href="#/about">About Mission</a>
-              <a href="#/features">Platform Features</a>
-              <a href="#/section/operations">Live Operations Stream</a>
-              <a href="#/section/workflow">7-Stage Architecture</a>
-              <a href="#/section/data-hub">Lahore Riverine Map</a>
-              <a href="#/section/relief">Relief Coordination</a>
-            </div>
-          </details>
-
-          <button
-            className="motion-toggle"
-            type="button"
-            onClick={() => set({ motion: !s.motion })}
-            aria-pressed={s.motion}
-            aria-label={s.motion ? 'Pause 3D and UI animations' : 'Resume 3D and UI animations'}
-          >
-            {s.motion ? <Pause size={14} /> : <Play size={14} />}
-            <span>{s.motion ? 'Pause Motion' : 'Play Motion'}</span>
-          </button>
-
-          <a className="btn" href="#/auth">
-            Sign In <ArrowRight size={15} />
-          </a>
+          <div className="header-auth-actions">
+            <a className="header-login-link" href="#/auth">
+              Login
+            </a>
+            <a className="header-register-pill" href="#/auth?mode=register">
+              Register
+            </a>
+          </div>
         </nav>
       </header>
     </div>
@@ -59,110 +40,86 @@ export function PublicHeader({ s, set }) {
 export function PublicFooter() {
   return (
     <footer className="public-footer">
-      <div className="wrap public-footer-inner">
-        {/* Column 1: Brand & Operational Focus */}
-        <div className="footer-col footer-brand-col">
-          <a className="public-brand" href="#/">
-            <Logo size={36} />
-            <span>
-              <b>ResQ Hub</b>
-              <small>Humanitarian Flood Coordination</small>
-            </span>
-          </a>
-          <p className="footer-mission-text">
-            A centralized civic-tech platform engineering communication bridges between vulnerable riverine settlements and verified relief partners along Lahore’s Ravi River corridor.
+      <div className="wrap footer-content-grid">
+        {/* Column 1: Organization & Identity */}
+        <div className="footer-col brand-col">
+          <div className="flex items-center gap-3 mb-3">
+            <Logo size={40} />
+            <div>
+              <b className="footer-brand-title">ResQHub Pakistan</b>
+              <small className="footer-brand-subtitle">Civic Disaster Resilience</small>
+            </div>
+          </div>
+          <p className="footer-description">
+            A centralized disaster management and relief coordination platform delivering accessible early warnings, verified localized data, and direct NGO assistance for flood-prone riverine communities along Lahore’s Ravi River.
           </p>
-          <div className="footer-compliance-pill">
-            <ShieldAlert size={14} className="text-emerald-500" />
-            <span>Multi-Tier Verification &amp; Anti-Duplicate Engine</span>
+          <div className="footer-punchline">
+            <i>"From Chaos to Coordination, From Need to Relief."</i>
           </div>
         </div>
 
-        {/* Column 2: Platform Architecture & Modules */}
+        {/* Column 2: Platform Navigation */}
         <div className="footer-col">
-          <h3 className="footer-col-title">Architecture &amp; Tools</h3>
-          <ul className="footer-links-list">
+          <h4 className="footer-col-title">Platform Modules</h4>
+          <ul className="footer-links">
             <li><a href="#/">Home Overview</a></li>
-            <li><a href="#/about">About &amp; 7-Stage Relief Model</a></li>
-            <li><a href="#/features">Core Platform Features</a></li>
-            <li><a href="#/section/operations">Live Operations Stream</a></li>
-            <li><a href="#/section/workflow">Verification Pipeline</a></li>
-            <li><a href="#/auth">Responder Portal (Sign In)</a></li>
+            <li><a href="#/about">About Mission &amp; SDGs</a></li>
+            <li><a href="#/features">Platform Architecture</a></li>
+            <li><a href="#/alerts">Early Warning Alerts</a></li>
+            <li><a href="#/report">Report Flood Emergency</a></li>
+            <li><a href="#/hub">Verified Data Hub</a></li>
+            <li><a href="#/needs">Needs &amp; Relief Dashboard</a></li>
+            <li><a href="#/auth">Responder Sign In</a></li>
           </ul>
         </div>
 
-        {/* Column 3: Lahore Ravi River Coverage Belt */}
+        {/* Column 3: Monitored Lahore Ravi Sectors */}
         <div className="footer-col">
-          <h3 className="footer-col-title">Lahore Ravi Belt Coverage</h3>
-          <ul className="footer-areas-list">
+          <h4 className="footer-col-title">Lahore Ravi Sectors</h4>
+          <ul className="footer-links sectors-list">
             {AREA_NAMES.map((name) => (
               <li key={name}>
-                <span className="area-indicator" />
-                <span>{name}</span>
+                <a href="#/map-admin">{name}</a>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Column 4: Direct Response Channels & Emergency Notice */}
-        <div className="footer-col footer-contact-col">
-          <h3 className="footer-col-title">Coordination Inquiries</h3>
-          <p className="footer-contact-desc">
-            For operational partnerships, NGO resource pledging, and field volunteer inquiries:
+        {/* Column 4: Emergency Contacts */}
+        <div className="footer-col">
+          <h4 className="footer-col-title">Emergency Contacts</h4>
+          <p className="footer-contact-note">
+            For life-threatening flood emergencies and immediate water rescue:
           </p>
-          <div className="footer-contact-links">
-            <a
-              className="contact-card-link"
-              href="mailto:mazisial9296@gmail.com"
-              aria-label="Send email to ResQ Hub at mazisial9296@gmail.com"
-            >
-              <Mail size={18} className="text-blue-500" />
-              <div>
-                <b>Email Inquiries</b>
-                <small>mazisial9296@gmail.com</small>
-              </div>
-            </a>
-            <a
-              className="contact-card-link"
-              href="https://wa.me/923044335771"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Direct WhatsApp channel with ResQ Hub coordinator"
-            >
-              <MessageCircle size={18} className="text-emerald-500" />
-              <div>
-                <b>WhatsApp Desk</b>
-                <small>+92 304 433 5771</small>
-              </div>
-            </a>
+          <div className="footer-emergency-badge">
+            <Phone size={18} />
+            <span>Emergency: <b>Rescue 1122</b></span>
           </div>
 
-          <div className="footer-emergency-advisory">
-            <b>Emergency Advisory</b>
-            <p>
-              In life-threatening flood emergencies, dial <strong>Rescue 1122</strong> directly. ResQ Hub operates as an information and relief coordination bridge.
-            </p>
+          <div className="footer-contact-list mt-3">
+            <a href="mailto:mazisial9296@gmail.com" className="footer-contact-link">
+              <Mail size={16} /> mazisial9296@gmail.com
+            </a>
+            <a href="https://wa.me/923044335771" target="_blank" rel="noopener noreferrer" className="footer-contact-link">
+              <MessageCircle size={16} /> +92 304 433 5771 (WhatsApp)
+            </a>
           </div>
         </div>
       </div>
 
       {/* Clean Bottom Copyright Bar */}
       <div className="footer-bottom-bar wrap">
-        <span>© {new Date().getFullYear()} ResQ Hub. All rights reserved. Built for community resilience along the Ravi River flood-prone corridor.</span>
-        <span>Secure Role-Based Access Control (RBAC) &amp; ISO-aligned Data Hygiene</span>
+        <span>© {new Date().getFullYear()} ResQHub Pakistan. All rights reserved. Connecting Warnings, Needs &amp; Relief.</span>
+        <span>Operational Focus: Lahore District, Punjab, Pakistan</span>
       </div>
     </footer>
   );
 }
 
-export default function PublicLayout({ children, s, set }) {
+export default function PublicLayout({ children }) {
   return (
     <div className="public-site">
-      <div className="public-prototype-banner">
-        <span>Prototype · Demo Data</span>
-        Example scenarios only—not official or live flood information. For emergencies, contact Rescue 1122 and follow local authorities.
-      </div>
-      <PublicHeader s={s} set={set} />
+      <PublicHeader />
       {children}
       <PublicFooter />
     </div>
