@@ -4,7 +4,8 @@ import express from 'express';import jwt from 'jsonwebtoken';import crypto from 
 import {AsyncLocalStorage} from 'node:async_hooks';import pg from 'pg';
 import {assess,can,tryPledge} from '../src/core.js';
 import {AREA_NAMES} from '../src/geo.js';
-const SECRET=process.env.JWT_SECRET,PORT=process.env.PORT||4000,FILE=process.env.VERCEL?'/tmp/resq-hub-data.json':new URL('./data.json',import.meta.url);
+const SECRET=process.env.JWT_SECRET;
+const PORT=process.env.PORT||4000,FILE=process.env.VERCEL?'/tmp/resq-hub-data.json':new URL('./data.json',import.meta.url);
 if(!SECRET||Buffer.byteLength(SECRET)<32)throw new Error('Set JWT_SECRET to a random value of at least 32 bytes before starting the API.');
 const usePostgres=Boolean(process.env.VERCEL),databaseUrl=process.env.POSTGRES_URL||process.env.DATABASE_URL;
 if(usePostgres&&!databaseUrl)throw new Error('Set POSTGRES_URL in Vercel project environment variables.');
