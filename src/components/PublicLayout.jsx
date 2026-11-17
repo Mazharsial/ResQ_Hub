@@ -9,7 +9,7 @@ export function PublicHeader() {
         <a className="public-brand" href="#/" aria-label="ResQ Hub - Return to Home">
           <Logo size={42} />
           <span>
-            <b>ResQHub Pakistan</b>
+            <b>ResQHub</b>
             <small>Disaster Management &amp; Relief Coordination</small>
           </span>
         </a>
@@ -46,7 +46,7 @@ export function PublicFooter() {
           <div className="flex items-center gap-3 mb-3">
             <Logo size={40} />
             <div>
-              <b className="footer-brand-title">ResQHub Pakistan</b>
+              <b className="footer-brand-title">ResQHub</b>
               <small className="footer-brand-subtitle">Civic Disaster Resilience</small>
             </div>
           </div>
@@ -54,7 +54,7 @@ export function PublicFooter() {
             A centralized disaster management and relief coordination platform delivering accessible early warnings, verified localized data, and direct NGO assistance for flood-prone riverine communities along Lahore’s Ravi River.
           </p>
           <div className="footer-punchline">
-            <i>"From Chaos to Coordination, From Need to Relief."</i>
+            <i>"See the risk. Unite the response. Deliver relief."</i>
           </div>
         </div>
 
@@ -109,7 +109,7 @@ export function PublicFooter() {
 
       {/* Clean Bottom Copyright Bar */}
       <div className="footer-bottom-bar wrap">
-        <span>© {new Date().getFullYear()} ResQHub Pakistan. All rights reserved. Connecting Warnings, Needs &amp; Relief.</span>
+        <span>© {new Date().getFullYear()} ResQHub. All rights reserved. Connecting Warnings, Needs &amp; Relief.</span>
         <span>Operational Focus: Lahore District, Punjab, Pakistan</span>
       </div>
     </footer>

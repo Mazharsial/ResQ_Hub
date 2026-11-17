@@ -1,6 +1,6 @@
 import {lazy,Suspense,useEffect,useState} from 'react';import AppRoutes from './Routes';import Shell from './components/Shell';
 const Public=lazy(()=>import('./pages/Public')),Landing=lazy(()=>import('./pages/Landing')),Auth=lazy(()=>import('./pages/Auth')),Dashboard=lazy(()=>import('./pages/Dashboard'));
-const T={en:{tag:'Connect. Support. Recover.',login:'Login',report:'Report Emergency',learn:'Learn More'},ur:{tag:'جڑیں۔ مدد کریں۔ بحال ہوں۔',login:'لاگ اِن',report:'ہنگامی رپورٹ',learn:'مزید جانیں'}};
+const T={en:{tag:'See the risk. Unite the response. Deliver relief.',login:'Login',report:'Report Emergency',learn:'Learn More'},ur:{tag:'خطرہ دیکھیں، ردعمل جوڑیں، امداد پہنچائیں۔',login:'لاگ اِن',report:'ہنگامی رپورٹ',learn:'مزید جانیں'}};
 const STAGE={report:2,alerts:2,needs:3,relief:3,community:3,profile:3};
 export default function App(){const [route,setRoute]=useState((location.hash.slice(1).split('?')[0]||'/'));const [s,setS]=useState({theme:'light',lang:'en',low:false,motion:!matchMedia('(prefers-reduced-motion: reduce)').matches});const [user,setUser]=useState(()=>{try{return JSON.parse(sessionStorage.getItem('u'))}catch{return null}});const [off,setOff]=useState(!navigator.onLine);
  const set=p=>setS(o=>({...o,...p}));
