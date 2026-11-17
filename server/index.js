@@ -1,7 +1,9 @@
 // ResQ Hub API: Express + JWT (access/refresh) + roles + SSE + rate limit. JSON-file store (swap for SQLite/PostgreSQL, see README).
-import 'dotenv/config';import express from 'express';import jwt from 'jsonwebtoken';import crypto from 'node:crypto';import fs from 'node:fs';
+import 'dotenv/config';import express from 'express';import jwt from 'jsonwebtoken';import crypto from 'node:crypto';import fs from 'node:fs';import {pathToFileURL} from 'node:url';
 import {assess,can,tryPledge} from '../src/core.js';
-const SECRET=process.env.JWT_SECRET||crypto.randomBytes(32).toString('hex'),PORT=process.env.PORT||4000,FILE=new URL('./data.json',import.meta.url);
+const PORT=process.env.PORT||4000;
+if(process.env.VERCEL&&(!process.env.ADMIN_EMAIL||!process.env.ADMIN_PASSWORD||!process.env.JWT_SECRET))throw new Error('Set ADMIN_EMAIL, ADMIN_PASSWORD, and JWT_SECRET in Vercel project environment variables.');
+const SECRET=process.env.JWT_SECRET||crypto.randomBytes(32).toString('hex'),FILE=process.env.DATA_FILE||(process.env.VERCEL?'/tmp/resq-hub-data.json':new URL('./data.json',import.meta.url));
 const H=p=>crypto.scryptSync(p,'resq-salt',32).toString('hex');
 const seed=()=>({users:[],contacts:[],
  reports:[{id:'RQ-1001',hazard:'Flood',district:'Lahore',lat:31.55,lng:74.34,time:Date.now()-72e5,source:'citizen',status:'Verified',confidence:.75,public:true,sample:true}],
@@ -34,4 +36,5 @@ app.post('/api/alerts',auth('broadcast'),(q,s)=>{const a={id:Date.now(),hazard:c
 app.get('/api/users',auth('moderate'),(q,s)=>s.json(db.users.map(pub)));
 app.post('/api/users/:id/approve',auth('moderate'),(q,s)=>{const u=db.users.find(x=>x.id==q.params.id);if(!u)return s.sendStatus(404);u.approved=true;save();s.json(pub(u))});
 app.post('/api/contact',(q,s)=>{const m={id:Date.now(),name:clean(q.body.name),email:clean(q.body.email),message:clean(q.body.message)};if(!m.name||!/^\S+@\S+\.\S+$/.test(m.email)||m.message.length<10)return s.status(400).json({error:'Please complete all fields.'});db.contacts.push(m);save();s.status(201).json({ok:true})});
-app.listen(PORT,()=>console.log('ResQ Hub API on http://localhost:'+PORT));
+if(!process.env.VERCEL&&process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)app.listen(PORT,()=>console.log('ResQ Hub API on http://localhost:'+PORT));
+export default app;
